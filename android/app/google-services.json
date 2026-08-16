@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "627598575414",
+    "project_id": "lifeguard-ai-24714",
+    "storage_bucket": "lifeguard-ai-24714.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:627598575414:android:363a7578ede7de04551597",
+        "android_client_info": {
+          "package_name": "com.example.lifeguard_ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3BkPhf_-GF6bHQKtCAbwKMXakW2TpyAs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

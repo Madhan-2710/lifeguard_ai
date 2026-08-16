@@ -1,0 +1,50 @@
+rules_version = '2';
+
+// LifeGuard AI Firestore security rules.
+//
+// Emergency contacts are stored per-user under:
+//   users/{userId}/emergency_contacts/{contactId}
+//
+// Every rule below scopes access to the authenticated user's own data so
+// that one user can never read or write another user's emergency contacts
+// (names, phone numbers, relationships) or profile information.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- User profiles -------------------------------------------------
+    // A user may only read/write their own profile document. The profile
+    // contains personal data (name, phone number, medical info) and must
+    // never be publicly readable.
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+          && request.auth.uid == userId;
+    }
+
+    // ---- Emergency contacts --------------------------------------------
+    // Contacts are private and user-specific. Only the owner of the parent
+    // user document may list, create, update or delete their contacts.
+    // This prevents any cross-user access to phone numbers or names.
+    match /users/{userId}/emergency_contacts/{contactId} {
+      allow read, write: if request.auth != null
+          && request.auth.uid == userId;
+    }
+
+    // ---- SOS alerts -----------------------------------------------------
+    // Emergency events are private to the authenticated user. Only the owner
+    // may create, read or update their own events (location, timestamp,
+    // contact ids, status).
+    match /users/{userId}/sos_alerts/{alertId} {
+      allow read, write: if request.auth != null
+          && request.auth.uid == userId;
+    }
+
+    // ---- Other feature collections (locked down by default) ------------
+    // No other collections are currently exposed. Add scoped rules here as
+    // features (medicines, health records, fall events) are implemented,
+    // always keyed to the authenticated user's uid.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
