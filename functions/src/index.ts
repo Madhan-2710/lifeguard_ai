@@ -4,6 +4,16 @@ import {FieldValue, getFirestore} from "firebase-admin/firestore";
 import {getApps, initializeApp} from "firebase-admin/app";
 import twilio from "twilio";
 import {parsePhoneNumberFromString} from "libphonenumber-js";
+import {
+  canClaimDelivery,
+  computeDeliveryStatus,
+  deliveryErrorMessage,
+  eventStatuses,
+  getPhoneNumber,
+  isValidPhone,
+  selectPendingContacts,
+  type Contact,
+} from "./delivery-logic";
 
 if (getApps().length === 0) initializeApp();
 
@@ -12,21 +22,6 @@ const twilioAccountSid = defineSecret("TWILIO_ACCOUNT_SID");
 const twilioAuthToken = defineSecret("TWILIO_AUTH_TOKEN");
 const twilioFromNumber = defineSecret("TWILIO_FROM_NUMBER");
 
-const eventStatuses = {
-  ready: "ready",
-  sending: "sending",
-  sent: "sent",
-  partiallySent: "partiallySent",
-  failed: "failed",
-} as const;
-
-type Contact = {
-  id: string;
-  name?: string;
-  phoneNumber?: string;
-  relationship?: string;
-};
-
 type EventRecord = {
   status?: string;
   deliveryStatus?: string;
@@ -34,6 +29,9 @@ type EventRecord = {
   longitude?: number;
   timestamp?: string;
   locationLink?: string;
+  successfulContactIds?: string[];
+  failedContactIds?: string[];
+  deliveryError?: string;
 };
 
 export const sendEmergencyAlert = onCall(
@@ -80,13 +78,13 @@ export const sendEmergencyAlert = onCall(
     try {
       const contactsSnapshot = await db.collection("users").doc(uid).collection("emergency_contacts").get();
       const contacts = contactsSnapshot.docs.map((doc) => ({id: doc.id, ...doc.data()} as Contact));
-      const validContacts = contacts.filter((contact) => isValidPhone(contact.phoneNumber));
+      const validContacts = contacts.filter((contact) => isValidPhone(getPhoneNumber(contact)));
       const alreadySuccessful = new Set(
         Array.isArray(eventSnapshot.data()?.successfulContactIds)
           ? (eventSnapshot.data()?.successfulContactIds as string[])
           : [],
       );
-      const pendingContacts = validContacts.filter((contact) => !alreadySuccessful.has(contact.id));
+      const pendingContacts = selectPendingContacts(validContacts, alreadySuccessful);
       if (pendingContacts.length === 0 && alreadySuccessful.size > 0) {
         await completeDelivery(eventRef, eventStatuses.sent, Array.from(alreadySuccessful), []);
         return {
@@ -112,7 +110,7 @@ export const sendEmergencyAlert = onCall(
           await client.messages.create({
             body,
             from: twilioFromNumber.value(),
-            to: parsePhoneNumberFromString(contact.phoneNumber!)!.number,
+            to: parsePhoneNumberFromString(getPhoneNumber(contact)!)!.number,
           });
           successfulContactIds.push(contact.id);
         } catch (error) {
@@ -125,10 +123,8 @@ export const sendEmergencyAlert = onCall(
         ...alreadySuccessful,
         ...successfulContactIds,
       ]));
-      const deliveryStatus = allSuccessfulContactIds.length === validContacts.length
-        ? eventStatuses.sent
-        : allSuccessfulContactIds.length > 0 ? eventStatuses.partiallySent : eventStatuses.failed;
-      const deliveryError = deliveryStatus === eventStatuses.sent ? undefined : "One or more emergency alerts could not be delivered.";
+      const deliveryStatus = computeDeliveryStatus(validContacts.length, allSuccessfulContactIds);
+      const deliveryError = deliveryErrorMessage(deliveryStatus);
       await completeDelivery(eventRef, deliveryStatus, allSuccessfulContactIds, failedContactIds, deliveryError);
       return {eventId, deliveryStatus, successfulContactIds: allSuccessfulContactIds, failedContactIds, ...(deliveryError ? {deliveryError} : {})};
     } catch (error) {
@@ -154,7 +150,7 @@ async function claimDelivery(ref: FirebaseFirestore.DocumentReference): Promise<
   });
 }
 
-async function completeDelivery(ref: FirebaseFirestore.DocumentReference, status: string, successful: string[] | string, failed: string[] | string = [], error?: string): Promise<void> {
+async function completeDelivery(ref: FirebaseFirestore.DocumentReference, status: string, successful: string[] | string, failed: string[] | string = [], error?: string | null): Promise<void> {
   if (typeof failed === "string") {
     error = failed;
     failed = [];
@@ -172,12 +168,6 @@ async function completeDelivery(ref: FirebaseFirestore.DocumentReference, status
   });
 }
 
-function isValidPhone(value?: string): boolean {
-  if (!value) return false;
-  const parsed = parsePhoneNumberFromString(value);
-  return Boolean(parsed?.isValid());
-}
-
 function buildMessage(eventId: string, event: EventRecord): string {
   const timestamp = event.timestamp ?? new Date().toISOString();
   const location = event.locationLink ?? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`;
@@ -188,8 +178,9 @@ function safeResult(eventId: string, event: EventRecord, flags: {alreadyDelivere
   return {
     eventId,
     deliveryStatus: event.deliveryStatus ?? eventStatuses.ready,
-    successfulContactIds: [],
-    failedContactIds: [],
+    successfulContactIds: Array.isArray(event.successfulContactIds) ? event.successfulContactIds : [],
+    failedContactIds: Array.isArray(event.failedContactIds) ? event.failedContactIds : [],
+    ...(event.deliveryError ? {deliveryError: event.deliveryError} : {}),
     ...(flags.alreadyDelivered ? {alreadyDelivered: true} : {}),
     ...(flags.deliveryInProgress ? {deliveryInProgress: true} : {}),
   };
