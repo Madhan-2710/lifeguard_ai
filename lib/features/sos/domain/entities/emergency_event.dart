@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'emergency_alert_delivery.dart';
+
 /// Status of an emergency (SOS) event.
 ///
 /// Phase 3A only *prepares* the event. Actual SMS / network delivery to
@@ -35,6 +37,12 @@ class EmergencyEvent extends Equatable {
     this.contactIds = const [],
     this.status = EmergencyEventStatus.pending,
     this.message,
+    this.deliveryStatus = EmergencyAlertDeliveryStatus.ready,
+    this.deliveryStartedAt,
+    this.deliveryCompletedAt,
+    this.successfulContactIds = const [],
+    this.failedContactIds = const [],
+    this.deliveryError,
   });
 
   final String id;
@@ -46,6 +54,12 @@ class EmergencyEvent extends Equatable {
   final List<String> contactIds;
   final EmergencyEventStatus status;
   final String? message;
+  final EmergencyAlertDeliveryStatus deliveryStatus;
+  final DateTime? deliveryStartedAt;
+  final DateTime? deliveryCompletedAt;
+  final List<String> successfulContactIds;
+  final List<String> failedContactIds;
+  final String? deliveryError;
 
   EmergencyEvent copyWith({
     String? id,
@@ -57,6 +71,12 @@ class EmergencyEvent extends Equatable {
     List<String>? contactIds,
     EmergencyEventStatus? status,
     String? message,
+    EmergencyAlertDeliveryStatus? deliveryStatus,
+    DateTime? deliveryStartedAt,
+    DateTime? deliveryCompletedAt,
+    List<String>? successfulContactIds,
+    List<String>? failedContactIds,
+    String? deliveryError,
     bool clearMessage = false,
   }) {
     return EmergencyEvent(
@@ -69,6 +89,12 @@ class EmergencyEvent extends Equatable {
       contactIds: contactIds ?? this.contactIds,
       status: status ?? this.status,
       message: clearMessage ? null : (message ?? this.message),
+      deliveryStatus: deliveryStatus ?? this.deliveryStatus,
+      deliveryStartedAt: deliveryStartedAt ?? this.deliveryStartedAt,
+      deliveryCompletedAt: deliveryCompletedAt ?? this.deliveryCompletedAt,
+      successfulContactIds: successfulContactIds ?? this.successfulContactIds,
+      failedContactIds: failedContactIds ?? this.failedContactIds,
+      deliveryError: deliveryError ?? this.deliveryError,
     );
   }
 
@@ -83,5 +109,11 @@ class EmergencyEvent extends Equatable {
     contactIds,
     status,
     message,
+    deliveryStatus,
+    deliveryStartedAt,
+    deliveryCompletedAt,
+    successfulContactIds,
+    failedContactIds,
+    deliveryError,
   ];
 }

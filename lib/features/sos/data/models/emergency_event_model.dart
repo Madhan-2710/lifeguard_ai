@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/constants/firebase_constants.dart';
+import '../../domain/entities/emergency_alert_delivery.dart';
 import '../../domain/entities/emergency_event.dart';
 
 /// Firestore (de)serialization for [EmergencyEvent].
@@ -14,6 +15,12 @@ class EmergencyEventModel extends EmergencyEvent {
     super.contactIds,
     super.status,
     super.message,
+    super.deliveryStatus,
+    super.deliveryStartedAt,
+    super.deliveryCompletedAt,
+    super.successfulContactIds,
+    super.failedContactIds,
+    super.deliveryError,
   });
 
   factory EmergencyEventModel.fromEntity(EmergencyEvent entity) {
@@ -27,6 +34,12 @@ class EmergencyEventModel extends EmergencyEvent {
       contactIds: entity.contactIds,
       status: entity.status,
       message: entity.message,
+      deliveryStatus: entity.deliveryStatus,
+      deliveryStartedAt: entity.deliveryStartedAt,
+      deliveryCompletedAt: entity.deliveryCompletedAt,
+      successfulContactIds: entity.successfulContactIds,
+      failedContactIds: entity.failedContactIds,
+      deliveryError: entity.deliveryError,
     );
   }
 
@@ -49,6 +62,12 @@ class EmergencyEventModel extends EmergencyEvent {
         orElse: () => EmergencyEventStatus.pending,
       ),
       message: map['message']?.toString(),
+      deliveryStatus: _parseDeliveryStatus(map['deliveryStatus']),
+      deliveryStartedAt: _parseDateTime(map['deliveryStartedAt']),
+      deliveryCompletedAt: _parseDateTime(map['deliveryCompletedAt']),
+      successfulContactIds: _stringList(map['successfulContactIds']),
+      failedContactIds: _stringList(map['failedContactIds']),
+      deliveryError: map['deliveryError']?.toString(),
     );
   }
 
@@ -63,9 +82,27 @@ class EmergencyEventModel extends EmergencyEvent {
       FirebaseConstants.alertedContacts: contactIds,
       FirebaseConstants.status: status.name,
       'message': message,
+      'deliveryStatus': deliveryStatus.name,
+      'deliveryStartedAt': deliveryStartedAt?.toIso8601String(),
+      'deliveryCompletedAt': deliveryCompletedAt?.toIso8601String(),
+      'successfulContactIds': successfulContactIds,
+      'failedContactIds': failedContactIds,
+      'deliveryError': deliveryError,
       FirebaseConstants.createdAt: DateTime.now().toIso8601String(),
       FirebaseConstants.updatedAt: DateTime.now().toIso8601String(),
     };
+  }
+
+  static EmergencyAlertDeliveryStatus _parseDeliveryStatus(dynamic value) {
+    return EmergencyAlertDeliveryStatus.values.firstWhere(
+      (status) => status.name == value?.toString(),
+      orElse: () => EmergencyAlertDeliveryStatus.ready,
+    );
+  }
+
+  static List<String> _stringList(dynamic value) {
+    if (value is! List) return const [];
+    return value.map((item) => item.toString()).toList();
   }
 
   static DateTime? _parseDateTime(dynamic value) {

@@ -10,6 +10,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/di/service_locator.dart';
 import '../../core/utils/helpers.dart';
 import '../../core/widgets/custom_button.dart';
+import '../../features/sos/domain/entities/emergency_alert_delivery.dart';
 import '../../features/sos/presentation/cubit/sos_cubit.dart';
 import '../../features/sos/presentation/cubit/sos_state.dart';
 import '../router/app_router.dart';
@@ -347,9 +348,93 @@ class _ReadyCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
+            const SizedBox(height: AppDimensions.paddingMD),
+            _DeliveryStatusView(state: state),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DeliveryStatusView extends StatelessWidget {
+  const _DeliveryStatusView({required this.state});
+
+  final SosState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final status = state.deliveryStatus;
+    final (label, color, icon) = switch (status) {
+      EmergencyAlertDeliveryStatus.ready => (
+          'Ready to notify emergency contacts',
+          AppColors.primaryBlue,
+          Icons.notifications_none,
+        ),
+      EmergencyAlertDeliveryStatus.sending => (
+          AppStrings.sosSending,
+          AppColors.warning,
+          Icons.sync,
+        ),
+      EmergencyAlertDeliveryStatus.sent => (
+          AppStrings.sosSentSuccessfully,
+          AppColors.success,
+          Icons.check_circle_outline,
+        ),
+      EmergencyAlertDeliveryStatus.partiallySent => (
+          AppStrings.sosPartiallySent,
+          AppColors.warning,
+          Icons.warning_amber_outlined,
+        ),
+      EmergencyAlertDeliveryStatus.failed => (
+          state.deliveryError ?? AppStrings.sosDeliveryFailed,
+          AppColors.error,
+          Icons.error_outline,
+        ),
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(width: AppDimensions.paddingSM),
+            Expanded(child: Text(label, style: TextStyle(color: color))),
+          ],
+        ),
+        if (status == EmergencyAlertDeliveryStatus.ready &&
+            state.contactCount > 0) ...[
+          const SizedBox(height: AppDimensions.paddingSM),
+          CustomButton(
+            label: 'Send Emergency Alert',
+            icon: Icons.send_outlined,
+            onPressed: () => context.read<SosCubit>().deliverAlert(),
+          ),
+        ],
+        if (status == EmergencyAlertDeliveryStatus.partiallySent ||
+            status == EmergencyAlertDeliveryStatus.failed) ...[
+          const SizedBox(height: AppDimensions.paddingSM),
+          CustomButton(
+            label: 'Retry Delivery',
+            icon: Icons.refresh,
+            variant: ButtonVariant.secondary,
+            onPressed: state.deliveryInProgress
+                ? null
+                : () => context.read<SosCubit>().deliverAlert(),
+          ),
+        ],
+        if (state.successfulContactIds.isNotEmpty ||
+            state.failedContactIds.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: AppDimensions.paddingSM),
+            child: Text(
+              '${state.successfulContactIds.length} delivered, '
+              '${state.failedContactIds.length} failed',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+      ],
     );
   }
 }

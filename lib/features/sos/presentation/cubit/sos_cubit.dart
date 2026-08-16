@@ -6,6 +6,8 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../contacts/domain/entities/emergency_contact.dart';
+import '../../domain/entities/emergency_alert_delivery.dart';
+import '../../domain/repositories/emergency_alert_delivery_repository.dart';
 import '../../../contacts/domain/repositories/contacts_repository.dart';
 import '../../domain/entities/emergency_event.dart';
 import '../../domain/repositories/emergency_event_repository.dart';
@@ -23,15 +25,19 @@ class SosCubit extends Cubit<SosState> {
     required ContactsRepository contactsRepository,
     required EmergencyEventRepository eventRepository,
     required LocationService locationService,
+    EmergencyAlertDeliveryRepository? alertDeliveryRepository,
     this.countdownDuration = const Duration(seconds: 5),
   })  : _repository = contactsRepository,
         _eventRepo = eventRepository,
         _location = locationService,
+        _deliveryRepository = alertDeliveryRepository,
         super(const SosState());
 
   final ContactsRepository _repository;
   final EmergencyEventRepository _eventRepo;
   final LocationService _location;
+  final EmergencyAlertDeliveryRepository? _deliveryRepository;
+  bool _deliveryInFlight = false;
 
   /// Length of the cancellable countdown before the SOS executes.
   final Duration countdownDuration;
@@ -210,11 +216,86 @@ class SosCubit extends Cubit<SosState> {
           status: SosStatus.ready,
           event: saved,
           message: AppStrings.sosEventPrepared,
+          deliveryStatus: EmergencyAlertDeliveryStatus.ready,
+          deliveryInProgress: false,
+          deliveryAlreadyCompleted: false,
         ),
       );
     } finally {
       _executing = false;
     }
+  }
+
+  /// Requests server-side SMS delivery for the current READY event.
+  /// The client guard is supplementary; backend idempotency is authoritative.
+  Future<void> deliverAlert() async {
+    final eventId = state.event?.id;
+    final repository = _deliveryRepository;
+    if (eventId == null || eventId.isEmpty || repository == null) {
+      emit(state.copyWith(
+        deliveryStatus: EmergencyAlertDeliveryStatus.failed,
+        deliveryError: 'Emergency alert delivery is not configured.',
+      ));
+      return;
+    }
+    if (state.status != SosStatus.ready ||
+        _deliveryInFlight ||
+        state.isDeliveryActive ||
+        state.deliveryAlreadyCompleted) {
+      return;
+    }
+
+    _deliveryInFlight = true;
+    emit(state.copyWith(
+      deliveryStatus: EmergencyAlertDeliveryStatus.sending,
+      deliveryInProgress: true,
+      deliveryError: null,
+    ));
+
+    try {
+      final result = await repository.deliverEmergencyAlert(eventId: eventId);
+      emit(state.copyWith(
+        deliveryStatus: result.status,
+        successfulContactIds: result.successfulContactIds,
+        failedContactIds: result.failedContactIds,
+        deliveryError: result.error,
+        deliveryAlreadyCompleted: result.alreadyDelivered || result.isSuccessful,
+        deliveryInProgress: false,
+        message: result.error ?? _deliveryMessage(result.status),
+      ));
+    } catch (error) {
+      emit(state.copyWith(
+        deliveryStatus: EmergencyAlertDeliveryStatus.failed,
+        deliveryError: _safeDeliveryError(error),
+        deliveryInProgress: false,
+        message: AppStrings.sosDeliveryFailed,
+      ));
+    } finally {
+      _deliveryInFlight = false;
+    }
+  }
+
+  String _deliveryMessage(EmergencyAlertDeliveryStatus status) {
+    switch (status) {
+      case EmergencyAlertDeliveryStatus.ready:
+        return AppStrings.sosEventPrepared;
+      case EmergencyAlertDeliveryStatus.sending:
+        return AppStrings.sosSending;
+      case EmergencyAlertDeliveryStatus.sent:
+        return AppStrings.sosSentSuccessfully;
+      case EmergencyAlertDeliveryStatus.partiallySent:
+        return AppStrings.sosPartiallySent;
+      case EmergencyAlertDeliveryStatus.failed:
+        return AppStrings.sosDeliveryFailed;
+    }
+  }
+
+  String _safeDeliveryError(Object error) {
+    final text = error.toString();
+    if (text.contains('Twilio') || text.contains('token') || text.contains('SID')) {
+      return AppStrings.sosDeliveryFailed;
+    }
+    return text.replaceFirst('Exception: ', '');
   }
 
   @override

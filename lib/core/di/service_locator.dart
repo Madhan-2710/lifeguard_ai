@@ -14,8 +14,12 @@ import '../../features/contacts/data/datasources/contacts_data_source.dart';
 import '../../features/contacts/data/repositories/contacts_repository_impl.dart';
 import '../../features/contacts/domain/repositories/contacts_repository.dart';
 import '../../features/contacts/presentation/cubit/contacts_cubit.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import '../../features/sos/data/datasources/emergency_alert_delivery_data_source.dart';
 import '../../features/sos/data/datasources/emergency_event_data_source.dart';
+import '../../features/sos/data/repositories/emergency_alert_delivery_repository_impl.dart';
 import '../../features/sos/data/repositories/emergency_event_repository_impl.dart';
+import '../../features/sos/domain/repositories/emergency_alert_delivery_repository.dart';
 import '../../features/sos/domain/repositories/emergency_event_repository.dart';
 import '../../features/sos/presentation/cubit/sos_cubit.dart';
 import '../services/location_service.dart';
@@ -90,11 +94,26 @@ Future<void> setupDependencies() async {
   );
 
   // Factory: a fresh SosCubit per screen visit, disposed with the screen.
+  sl.registerLazySingleton<FirebaseFunctions>(
+    () => FirebaseFunctions.instance,
+  );
+
+  sl.registerLazySingleton<EmergencyAlertDeliveryDataSource>(
+    () => EmergencyAlertDeliveryDataSourceImpl(functions: sl<FirebaseFunctions>()),
+  );
+
+  sl.registerLazySingleton<EmergencyAlertDeliveryRepository>(
+    () => EmergencyAlertDeliveryRepositoryImpl(
+      sl<EmergencyAlertDeliveryDataSource>(),
+    ),
+  );
+
   sl.registerFactory<SosCubit>(
     () => SosCubit(
       contactsRepository: sl<ContactsRepository>(),
       eventRepository: sl<EmergencyEventRepository>(),
       locationService: sl<LocationService>(),
+      alertDeliveryRepository: sl<EmergencyAlertDeliveryRepository>(),
     ),
   );
 }

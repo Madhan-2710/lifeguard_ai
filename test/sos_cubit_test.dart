@@ -4,7 +4,9 @@ import 'package:lifeguard_ai/core/errors/exceptions.dart';
 import 'package:lifeguard_ai/core/services/location_service.dart';
 import 'package:lifeguard_ai/features/contacts/domain/entities/emergency_contact.dart';
 import 'package:lifeguard_ai/features/contacts/domain/repositories/contacts_repository.dart';
+import 'package:lifeguard_ai/features/sos/domain/entities/emergency_alert_delivery.dart';
 import 'package:lifeguard_ai/features/sos/domain/entities/emergency_event.dart';
+import 'package:lifeguard_ai/features/sos/domain/repositories/emergency_alert_delivery_repository.dart';
 import 'package:lifeguard_ai/features/sos/domain/repositories/emergency_event_repository.dart';
 import 'package:lifeguard_ai/features/sos/presentation/cubit/sos_cubit.dart';
 import 'package:lifeguard_ai/features/sos/presentation/cubit/sos_state.dart';
@@ -236,6 +238,7 @@ SosCubit _buildCubit({
       error: locationError,
       permissionError: permissionError,
     ),
+    alertDeliveryRepository: _FakeDeliveryRepository(),
   );
 }
 
@@ -291,6 +294,18 @@ class _FakeEventRepository implements EmergencyEventRepository {
 
   @override
   Future<EmergencyEvent?> getEvent(String eventId) async => created;
+}
+
+class _FakeDeliveryRepository implements EmergencyAlertDeliveryRepository {
+  @override
+  Future<EmergencyAlertDeliveryResult> deliverEmergencyAlert({
+    required String eventId,
+  }) async {
+    return EmergencyAlertDeliveryResult(
+      eventId: eventId,
+      status: EmergencyAlertDeliveryStatus.sent,
+    );
+  }
 }
 
 class _FakeLocationService implements LocationService {

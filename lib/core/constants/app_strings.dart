@@ -101,6 +101,12 @@ class AppStrings {
   static const String sosTryAgain = 'Try Again';
   static const String sosStartNew = 'Start New SOS';
   static const String openSettings = 'Open Settings';
+  static const String sosSending = 'Sending emergency alert...';
+  static const String sosSentSuccessfully = 'Emergency alert sent successfully.';
+  static const String sosPartiallySent = 'Emergency alert partially delivered.';
+  static const String sosDeliveryFailed = 'Emergency alert delivery failed.';
+  static const String sosAlreadyDelivered = 'Emergency alert was already delivered.';
+  static const String sosDeliveryInProgress = 'Emergency alert delivery is already in progress.';
 
   // Fall Detection
   static const String fallDetected = '⚠️ Fall Detected!';

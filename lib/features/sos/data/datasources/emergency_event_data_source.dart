@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/firebase_constants.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../domain/entities/emergency_alert_delivery.dart';
 import '../../domain/entities/emergency_event.dart';
 import '../models/emergency_event_model.dart';
 
@@ -15,6 +16,12 @@ abstract class EmergencyEventDataSource {
     String eventId,
     EmergencyEventStatus status, {
     String? message,
+    EmergencyAlertDeliveryStatus? deliveryStatus,
+    DateTime? deliveryStartedAt,
+    DateTime? deliveryCompletedAt,
+    List<String>? successfulContactIds,
+    List<String>? failedContactIds,
+    String? deliveryError,
   });
   Future<EmergencyEventModel?> getEvent(String eventId);
 }
@@ -56,6 +63,12 @@ class EmergencyEventDataSourceImpl implements EmergencyEventDataSource {
         contactIds: event.contactIds,
         status: event.status,
         message: event.message,
+        deliveryStatus: event.deliveryStatus,
+        deliveryStartedAt: event.deliveryStartedAt,
+        deliveryCompletedAt: event.deliveryCompletedAt,
+        successfulContactIds: event.successfulContactIds,
+        failedContactIds: event.failedContactIds,
+        deliveryError: event.deliveryError,
       );
 
       await docRef.set(model.toMap());
@@ -70,13 +83,33 @@ class EmergencyEventDataSourceImpl implements EmergencyEventDataSource {
     String eventId,
     EmergencyEventStatus status, {
     String? message,
+    EmergencyAlertDeliveryStatus? deliveryStatus,
+    DateTime? deliveryStartedAt,
+    DateTime? deliveryCompletedAt,
+    List<String>? successfulContactIds,
+    List<String>? failedContactIds,
+    String? deliveryError,
   }) async {
     try {
       final data = <String, dynamic>{
         FirebaseConstants.status: status.name,
         FirebaseConstants.updatedAt: DateTime.now().toIso8601String(),
         'message': ?message,
+        if (deliveryStatus != null) 'deliveryStatus': deliveryStatus.name,
+        if (deliveryStartedAt != null)
+          'deliveryStartedAt': deliveryStartedAt.toIso8601String(),
+        if (deliveryCompletedAt != null)
+          'deliveryCompletedAt': deliveryCompletedAt.toIso8601String(),
       };
+      if (successfulContactIds != null) {
+        data['successfulContactIds'] = successfulContactIds;
+      }
+      if (failedContactIds != null) {
+        data['failedContactIds'] = failedContactIds;
+      }
+      if (deliveryError != null) {
+        data['deliveryError'] = deliveryError;
+      }
       await _userEventsRef.doc(eventId).update(data);
       final doc = await _userEventsRef.doc(eventId).get();
       return EmergencyEventModel.fromMap(doc.data() ?? {}, doc.id);
