@@ -108,6 +108,22 @@ class AppStrings {
   static const String sosAlreadyDelivered = 'Emergency alert was already delivered.';
   static const String sosDeliveryInProgress = 'Emergency alert delivery is already in progress.';
 
+  // Emergency SOS — Phase 4A (history)
+  static const String sosHistoryTitle = 'SOS History';
+  static const String sosHistoryEmpty = 'No SOS events yet';
+  static const String sosHistoryEmptyDescription = 'Your past SOS events will appear here after you use the SOS button.';
+  static const String sosHistoryLoadError = 'Could not load your SOS history. Please try again.';
+  static const String sosHistoryRetry = 'Retry';
+  static const String sosHistoryEventStatus = 'Event status';
+  static const String sosHistoryDeliveryStatus = 'Delivery status';
+  static const String sosHistoryLocation = 'Location';
+  static const String sosHistoryLocationAvailable = 'Available';
+  static const String sosHistoryLocationUnavailable = 'Not available';
+  static const String sosHistoryTimeUnavailable = 'Time unavailable';
+  static const String sosHistorySuccessful = 'Successful';
+  static const String sosHistoryFailed = 'Failed';
+  static const String sosHistoryContacts = 'Contacts';
+
   // Fall Detection
   static const String fallDetected = '⚠️ Fall Detected!';
   static const String fallConfirmMessage = 'Are you okay? Tap "I\'m OK" if you\'re fine, or the alert will be sent automatically.';

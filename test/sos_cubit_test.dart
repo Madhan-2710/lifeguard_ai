@@ -294,6 +294,10 @@ class _FakeEventRepository implements EmergencyEventRepository {
 
   @override
   Future<EmergencyEvent?> getEvent(String eventId) async => created;
+
+  @override
+  Future<List<EmergencyEvent>> getEventHistory() async =>
+      created == null ? const [] : [created!];
 }
 
 class _FakeDeliveryRepository implements EmergencyAlertDeliveryRepository {

@@ -181,6 +181,9 @@ class _Events implements EmergencyEventRepository {
   Future<EmergencyEvent> updateEventStatus(String eventId, EmergencyEventStatus status, {String? message}) async => throw UnimplementedError();
   @override
   Future<EmergencyEvent?> getEvent(String eventId) async => null;
+
+  @override
+  Future<List<EmergencyEvent>> getEventHistory() async => const [];
 }
 
 class _Location implements LocationService {

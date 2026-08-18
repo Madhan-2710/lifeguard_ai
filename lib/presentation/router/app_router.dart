@@ -8,6 +8,7 @@ import '../auth/forgot_password_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../health_assistant/chat_screen.dart';
 import '../emergency/sos_screen.dart';
+import '../emergency/sos_history_screen.dart';
 import '../fall_detection/fall_detection_screen.dart';
 import '../medicine/medicine_list_screen.dart';
 import '../medicine/add_medicine_screen.dart';
@@ -29,6 +30,7 @@ class AppRoutes {
   static const String dashboard = '/dashboard';
   static const String healthAssistant = '/health-assistant';
   static const String sos = '/sos';
+  static const String sosHistory = '/sos-history';
   static const String fallDetection = '/fall-detection';
   static const String medicines = '/medicines';
   static const String addMedicine = '/add-medicine';
@@ -93,6 +95,11 @@ class AppRouter {
           path: AppRoutes.sos,
           name: 'sos',
           builder: (context, state) => const SOSScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.sosHistory,
+          name: 'sosHistory',
+          builder: (context, state) => const SosHistoryScreen(),
         ),
         GoRoute(
           path: AppRoutes.fallDetection,

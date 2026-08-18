@@ -17,4 +17,11 @@ abstract class EmergencyEventRepository {
 
   /// Fetches a single event, or null when it does not exist.
   Future<EmergencyEvent?> getEvent(String eventId);
+
+  /// Fetches all previous events for the authenticated user.
+  ///
+  /// The returned list is unordered; consumers sort by timestamp when
+  /// displaying newest-first. Events with malformed or missing optional
+  /// fields are parsed with safe defaults rather than dropped.
+  Future<List<EmergencyEvent>> getEventHistory();
 }

@@ -22,6 +22,7 @@ import '../../features/sos/data/repositories/emergency_event_repository_impl.dar
 import '../../features/sos/domain/repositories/emergency_alert_delivery_repository.dart';
 import '../../features/sos/domain/repositories/emergency_event_repository.dart';
 import '../../features/sos/presentation/cubit/sos_cubit.dart';
+import '../../features/sos/presentation/cubit/sos_history_cubit.dart';
 import '../services/location_service.dart';
 
 final sl = GetIt.instance;
@@ -115,5 +116,10 @@ Future<void> setupDependencies() async {
       locationService: sl<LocationService>(),
       alertDeliveryRepository: sl<EmergencyAlertDeliveryRepository>(),
     ),
+  );
+
+  // Factory: a fresh SosHistoryCubit per screen visit, disposed with the screen.
+  sl.registerFactory<SosHistoryCubit>(
+    () => SosHistoryCubit(eventRepository: sl<EmergencyEventRepository>()),
   );
 }

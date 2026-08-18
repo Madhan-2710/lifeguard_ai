@@ -24,6 +24,13 @@ abstract class EmergencyEventDataSource {
     String? deliveryError,
   });
   Future<EmergencyEventModel?> getEvent(String eventId);
+
+  /// Fetches all events stored under `users/{userId}/sos_alerts`.
+  ///
+  /// Documents are parsed with [EmergencyEventModel.fromMap], which applies
+  /// safe defaults for malformed or missing optional fields, so a single bad
+  /// document never fails the whole history read.
+  Future<List<EmergencyEventModel>> getEventHistory();
 }
 
 class EmergencyEventDataSourceImpl implements EmergencyEventDataSource {
@@ -126,6 +133,20 @@ class EmergencyEventDataSourceImpl implements EmergencyEventDataSource {
       return EmergencyEventModel.fromMap(doc.data() ?? {}, doc.id);
     } catch (e) {
       throw ServerException(message: 'Failed to fetch emergency event: $e');
+    }
+  }
+
+  @override
+  Future<List<EmergencyEventModel>> getEventHistory() async {
+    try {
+      final snapshot = await _userEventsRef.get();
+      return snapshot.docs
+          .map((doc) => EmergencyEventModel.fromMap(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      throw ServerException(
+        message: 'Failed to fetch emergency event history: $e',
+      );
     }
   }
 }

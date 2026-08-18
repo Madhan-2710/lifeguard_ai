@@ -51,7 +51,16 @@ class _SosView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.sosTitle)),
+      appBar: AppBar(
+        title: const Text(AppStrings.sosTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: AppStrings.sosHistoryTitle,
+            onPressed: () => context.push(AppRoutes.sosHistory),
+          ),
+        ],
+      ),
       body: BlocConsumer<SosCubit, SosState>(
         listener: _handleState,
         builder: (context, state) {

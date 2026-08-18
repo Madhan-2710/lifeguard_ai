@@ -31,4 +31,9 @@ class EmergencyEventRepositoryImpl implements EmergencyEventRepository {
   Future<EmergencyEvent?> getEvent(String eventId) async {
     return await _dataSource.getEvent(eventId);
   }
+
+  @override
+  Future<List<EmergencyEvent>> getEventHistory() async {
+    return await _dataSource.getEventHistory();
+  }
 }
