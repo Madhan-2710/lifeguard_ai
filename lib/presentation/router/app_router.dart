@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../features/sos/domain/entities/emergency_event.dart';
 import '../splash/splash_screen.dart';
 import '../onboarding/onboarding_screen.dart';
 import '../auth/login_screen.dart';
@@ -8,6 +10,7 @@ import '../auth/forgot_password_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../health_assistant/chat_screen.dart';
 import '../emergency/sos_screen.dart';
+import '../emergency/sos_history_detail_screen.dart';
 import '../emergency/sos_history_screen.dart';
 import '../fall_detection/fall_detection_screen.dart';
 import '../medicine/medicine_list_screen.dart';
@@ -31,6 +34,7 @@ class AppRoutes {
   static const String healthAssistant = '/health-assistant';
   static const String sos = '/sos';
   static const String sosHistory = '/sos-history';
+  static const String sosHistoryDetail = '/sos-history-detail';
   static const String fallDetection = '/fall-detection';
   static const String medicines = '/medicines';
   static const String addMedicine = '/add-medicine';
@@ -51,9 +55,9 @@ class AppRoutes {
 class AppRouter {
   AppRouter._();
 
-  static GoRouter createRouter() {
+  static GoRouter createRouter({String initialLocation = AppRoutes.splash}) {
     return GoRouter(
-      initialLocation: AppRoutes.splash,
+      initialLocation: initialLocation,
       debugLogDiagnostics: true,
       routes: [
         GoRoute(
@@ -100,6 +104,17 @@ class AppRouter {
           path: AppRoutes.sosHistory,
           name: 'sosHistory',
           builder: (context, state) => const SosHistoryScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.sosHistoryDetail,
+          name: 'sosHistoryDetail',
+          builder: (context, state) {
+            final event = state.extra as EmergencyEvent?;
+            if (event == null) {
+              return const SosHistoryScreen();
+            }
+            return SosHistoryDetailScreen(event: event);
+          },
         ),
         GoRoute(
           path: AppRoutes.fallDetection,

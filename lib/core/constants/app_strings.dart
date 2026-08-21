@@ -123,6 +123,20 @@ class AppStrings {
   static const String sosHistorySuccessful = 'Successful';
   static const String sosHistoryFailed = 'Failed';
   static const String sosHistoryContacts = 'Contacts';
+  static const String sosHistoryDetail = 'View details';
+
+  // Emergency SOS — Phase 4B (event detail)
+  static const String sosHistoryDetailTitle = 'Event Details';
+  static const String sosHistoryDetailEventTime = 'Event time';
+  static const String sosHistoryDetailStatus = 'Status';
+  static const String sosHistoryDetailDelivery = 'Delivery';
+  static const String sosHistoryDetailDeliveryError = 'Delivery error';
+  static const String sosHistoryDetailNoDeliveryData = 'No delivery data available.';
+  static const String sosHistoryDetailLocation = 'Location';
+  static const String sosHistoryDetailCoordinates = 'Coordinates';
+  static const String sosHistoryDetailOpenMaps = 'Open in Google Maps';
+  static const String sosHistoryDetailMapsError = 'Could not open Google Maps.';
+  static const String sosHistoryDetailEventId = 'Event ID';
 
   // Fall Detection
   static const String fallDetected = '⚠️ Fall Detected!';

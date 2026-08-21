@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_dimensions.dart';
@@ -11,6 +12,7 @@ import '../../features/sos/domain/entities/emergency_alert_delivery.dart';
 import '../../features/sos/domain/entities/emergency_event.dart';
 import '../../features/sos/presentation/cubit/sos_history_cubit.dart';
 import '../../features/sos/presentation/cubit/sos_history_state.dart';
+import '../router/app_router.dart';
 
 /// SOS History screen (Phase 4A).
 ///
@@ -160,16 +162,23 @@ class _HistoryList extends StatelessWidget {
       separatorBuilder: (_, _) => const SizedBox(
         height: AppDimensions.paddingMD,
       ),
-      itemBuilder: (context, index) => _HistoryCard(event: events[index]),
+      itemBuilder: (context, index) => _HistoryCard(
+        event: events[index],
+        onTap: () => context.push(
+          AppRoutes.sosHistoryDetail,
+          extra: events[index],
+        ),
+      ),
     );
   }
 }
 /// A single history item: date/time, event status, delivery status,
 /// successful/failed contact counts, and location availability.
 class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({required this.event});
+  const _HistoryCard({required this.event, this.onTap});
 
   final EmergencyEvent event;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +189,10 @@ class _HistoryCard extends StatelessWidget {
         (event.locationLink != null && event.locationLink!.isNotEmpty);
 
     return Card(
-      child: Padding(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,6 +239,25 @@ class _HistoryCard extends StatelessWidget {
                   ? AppStrings.sosHistoryLocationAvailable
                   : AppStrings.sosHistoryLocationUnavailable,
             ),
+            const SizedBox(height: AppDimensions.paddingSM),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  AppStrings.sosHistoryDetail,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.paddingXS),
+                const Icon(
+                  Icons.chevron_right,
+                  size: AppDimensions.iconSM,
+                  color: AppColors.primaryBlue,
+                ),
+              ],
+            ),
             if (event.successfulContactIds.isNotEmpty ||
                 event.failedContactIds.isNotEmpty) ...[
               const SizedBox(height: AppDimensions.paddingSM),
@@ -245,6 +276,7 @@ class _HistoryCard extends StatelessWidget {
               ),
             ],
           ],
+        ),
         ),
       ),
     );

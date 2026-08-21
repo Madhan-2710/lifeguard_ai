@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lifeguard_ai/core/constants/app_strings.dart';
 import 'package:lifeguard_ai/features/sos/domain/entities/emergency_alert_delivery.dart';
 import 'package:lifeguard_ai/features/sos/domain/entities/emergency_event.dart';
 import 'package:lifeguard_ai/features/sos/domain/repositories/emergency_event_repository.dart';
 import 'package:lifeguard_ai/features/sos/presentation/cubit/sos_history_cubit.dart';
 import 'package:lifeguard_ai/features/sos/presentation/cubit/sos_history_state.dart';
+import 'package:lifeguard_ai/presentation/emergency/sos_history_detail_screen.dart';
 import 'package:lifeguard_ai/presentation/emergency/sos_history_screen.dart';
+import 'package:lifeguard_ai/presentation/router/app_router.dart';
 
 void main() {
   group('SosHistoryView rendering', () {
@@ -173,6 +176,38 @@ void main() {
       cubit.close();
     });
   });
+
+  group('SosHistoryView navigation', () {
+    testWidgets('tapping a history event opens the detail screen', (
+      tester,
+    ) async {
+      final cubit = SosHistoryCubit(eventRepository: _FakeRepo());
+      cubit.emit(
+        SosHistoryState(
+          status: SosHistoryStatus.loaded,
+          events: [
+            _event(
+              id: 'evt-1',
+              deliveryStatus: EmergencyAlertDeliveryStatus.sent,
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(_wrapWithRouter(cubit));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SosHistoryView), findsOneWidget);
+
+      await tester.tap(find.byType(Card).first);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SosHistoryDetailScreen), findsOneWidget);
+      expect(find.text(AppStrings.sosHistoryDetailTitle), findsOneWidget);
+      expect(find.text('evt-1'), findsOneWidget);
+      cubit.close();
+    });
+  });
 }
 
 EmergencyEvent _event({
@@ -202,6 +237,29 @@ Widget _wrap(SosHistoryCubit cubit) {
   return BlocProvider<SosHistoryCubit>(
     create: (_) => cubit,
     child: const MaterialApp(home: SosHistoryView()),
+  );
+}
+
+Widget _wrapWithRouter(SosHistoryCubit cubit) {
+  final router = GoRouter(
+    initialLocation: AppRoutes.sosHistory,
+    routes: [
+      GoRoute(
+        path: AppRoutes.sosHistory,
+        name: 'sosHistory',
+        builder: (context, state) => const SosHistoryView(),
+      ),
+      GoRoute(
+        path: AppRoutes.sosHistoryDetail,
+        name: 'sosHistoryDetail',
+        builder: (context, state) =>
+            SosHistoryDetailScreen(event: state.extra as EmergencyEvent),
+      ),
+    ],
+  );
+  return BlocProvider<SosHistoryCubit>(
+    create: (_) => cubit,
+    child: MaterialApp.router(routerConfig: router),
   );
 }
 
