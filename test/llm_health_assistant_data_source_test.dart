@@ -48,6 +48,34 @@ void main() {
       expect(response.sosRecommended, isFalse);
     });
 
+    test('system allows OTC suggestions with safety guardrails',
+        () async {
+      final client = MockClient((request) async {
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        final messages = body['messages'] as List<dynamic>;
+        final system = messages
+            .firstWhere((m) => m['role'] == 'system')['content'] as String;
+        // May suggest OTC medicines when the user asks.
+        expect(system, contains('non-prescription (OTC)'));
+        expect(system, contains('Possible OTC medicine options'));
+        // Must not diagnose, prescribe Rx-only meds, or guarantee safety.
+        expect(system, contains('definite diagnosis'));
+        expect(system, contains('prescription-only'));
+        expect(system, contains('antibiotics'));
+        expect(system, contains('guarantee that a medicine is safe'));
+        // Emergency care must never be delayed by medication suggestions.
+        expect(system, contains('sos_recommended'));
+        expect(system, contains('never delay emergency care'));
+        return llmResponse(jsonEncode({
+          'text': 'Guidance.',
+          'sos_recommended': false,
+        }));
+      });
+
+      final response = await dataSourceWith(client).getResponse('headache');
+      expect(response.text, 'Guidance.');
+    });
+
     test('LLM SOS recommendation is honored', () async {
       final client = MockClient((request) async {
         return llmResponse(jsonEncode({

@@ -67,7 +67,7 @@ class AppStrings {
   static const String clearChat = 'Clear Chat';
 
   // AI Health Assistant — Phase 5A
-  static const String healthAssistantWelcome = 'Hi, I\'m your AI Health Assistant. I can offer general first aid guidance, but I\'m not a doctor and can\'t diagnose conditions or prescribe medication. If you\'re experiencing a medical emergency, call emergency services right away. How can I help?';
+  static const String healthAssistantWelcome = 'Hi, I\'m your AI Health Assistant. I can offer general health and first-aid guidance, and if you tell me your symptoms I can suggest common non-prescription (OTC) medicine options with precautions. I\'m not a doctor and can\'t diagnose conditions or prescribe prescription-only medication. If you\'re experiencing a medical emergency, call emergency services right away. How can I help?';
   static const String healthAssistantDisclaimer = 'For emergencies, call your local emergency number. This assistant provides general guidance only and is not a substitute for professional medical care.';
   static const String healthAssistantSend = 'Send';
   static const String healthAssistantResponding = 'Responding…';
