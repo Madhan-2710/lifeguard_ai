@@ -14,6 +14,11 @@ import '../../features/contacts/data/datasources/contacts_data_source.dart';
 import '../../features/contacts/data/repositories/contacts_repository_impl.dart';
 import '../../features/contacts/domain/repositories/contacts_repository.dart';
 import '../../features/contacts/presentation/cubit/contacts_cubit.dart';
+import '../../features/health_assistant/data/datasources/health_assistant_data_source.dart';
+import '../../features/health_assistant/data/datasources/local_health_assistant_data_source.dart';
+import '../../features/health_assistant/data/repositories/health_assistant_repository_impl.dart';
+import '../../features/health_assistant/domain/repositories/health_assistant_repository.dart';
+import '../../features/health_assistant/presentation/cubit/health_assistant_cubit.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../features/sos/data/datasources/emergency_alert_delivery_data_source.dart';
 import '../../features/sos/data/datasources/emergency_event_data_source.dart';
@@ -121,5 +126,19 @@ Future<void> setupDependencies() async {
   // Factory: a fresh SosHistoryCubit per screen visit, disposed with the screen.
   sl.registerFactory<SosHistoryCubit>(
     () => SosHistoryCubit(eventRepository: sl<EmergencyEventRepository>()),
+  );
+
+  // AI Health Assistant (Phase 5A) — local, offline-first response engine.
+  sl.registerLazySingleton<HealthAssistantDataSource>(
+    () => const LocalHealthAssistantDataSource(),
+  );
+
+  sl.registerLazySingleton<HealthAssistantRepository>(
+    () => HealthAssistantRepositoryImpl(sl<HealthAssistantDataSource>()),
+  );
+
+  // Factory: a fresh HealthAssistantCubit per screen visit (conversation state).
+  sl.registerFactory<HealthAssistantCubit>(
+    () => HealthAssistantCubit(repository: sl<HealthAssistantRepository>()),
   );
 }

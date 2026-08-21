@@ -66,6 +66,17 @@ class AppStrings {
   static const String offlineFallback = 'You are offline. Using basic health guidance.';
   static const String clearChat = 'Clear Chat';
 
+  // AI Health Assistant — Phase 5A
+  static const String healthAssistantWelcome = 'Hi, I\'m your AI Health Assistant. I can offer general first aid guidance, but I\'m not a doctor and can\'t diagnose conditions or prescribe medication. If you\'re experiencing a medical emergency, call emergency services right away. How can I help?';
+  static const String healthAssistantDisclaimer = 'For emergencies, call your local emergency number. This assistant provides general guidance only and is not a substitute for professional medical care.';
+  static const String healthAssistantSend = 'Send';
+  static const String healthAssistantResponding = 'Responding…';
+  static const String healthAssistantError = 'Something went wrong. Please try again.';
+  static const String healthAssistantSendFailed = 'Not delivered';
+  static const String healthAssistantSosPrompt = 'Your symptoms may be serious. Consider opening the emergency SOS to alert your trusted contacts.';
+  static const String openEmergencySos = 'Open Emergency SOS';
+  static const String healthAssistantClearConfirm = 'Clear the entire conversation?';
+
   // Emergency SOS
   static const String sosTitle = 'SOS Emergency';
   static const String sosDescription = 'Press the button below to send an emergency alert to your trusted contacts with your live location.';
