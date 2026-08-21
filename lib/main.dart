@@ -8,6 +8,8 @@ import 'core/di/service_locator.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/contacts/presentation/cubit/contacts_cubit.dart';
+import 'features/medical_profile/presentation/cubit/medical_profile_cubit.dart';
+import 'features/medicine/presentation/cubit/medicines_cubit.dart';
 import 'presentation/router/app_router.dart';
 
 Future<void> main() async {
@@ -44,6 +46,12 @@ class LifeGuardAIApp extends StatelessWidget {
         ),
         BlocProvider<ContactsCubit>(
           create: (_) => sl<ContactsCubit>(),
+        ),
+        BlocProvider<MedicalProfileCubit>(
+          create: (_) => sl<MedicalProfileCubit>(),
+        ),
+        BlocProvider<MedicinesCubit>(
+          create: (_) => sl<MedicinesCubit>(),
         ),
       ],
       child: MaterialApp.router(

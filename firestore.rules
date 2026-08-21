@@ -30,6 +30,23 @@ service cloud.firestore {
           && request.auth.uid == userId;
     }
 
+    // ---- Medical profile (Phase 6A) ------------------------------------
+    // The medical profile (date of birth, blood group, allergies, chronic
+    // conditions, current medicines, past surgeries, emergency notes) is
+    // private and user-specific. Only the owner may read or write it.
+    match /users/{userId}/medical_profile/{docId} {
+      allow read, write: if request.auth != null
+          && request.auth.uid == userId;
+    }
+
+    // ---- Medicines (Phase 6A) ------------------------------------------
+    // Medicines and their reminder settings are private to the authenticated
+    // user. Only the owner may list, create, update or delete them.
+    match /users/{userId}/medicines/{medicineId} {
+      allow read, write: if request.auth != null
+          && request.auth.uid == userId;
+    }
+
     // ---- SOS alerts -----------------------------------------------------
     // Emergency events are private to the authenticated user. Only the owner
     // may create, read or update their own events (location, timestamp,

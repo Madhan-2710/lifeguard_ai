@@ -161,17 +161,42 @@ class AppStrings {
 
   // Medicine Reminder
   static const String addMedicine = 'Add Medicine';
+  static const String editMedicine = 'Edit Medicine';
   static const String medicineName = 'Medicine Name';
   static const String dosage = 'Dosage';
+  static const String dosageHint = 'e.g. 500 mg — as entered by you or your doctor';
   static const String frequency = 'Frequency';
+  static const String frequencyHint = 'e.g. Once daily, Twice daily, Every 8 hours';
   static const String reminderTime = 'Reminder Time';
+  static const String reminderTimes = 'Reminder Times';
+  static const String addReminderTime = 'Add Reminder Time';
+  static const String startDate = 'Start Date';
+  static const String endDate = 'End Date';
+  static const String optionalEndDate = 'End Date (optional)';
+  static const String prescribedBy = 'Prescribed By';
+  static const String prescribedByHint = 'e.g. Dr. Smith (optional)';
+  static const String medicineNotes = 'Notes';
+  static const String medicineNotesHint = 'Instructions entered by you or your doctor (optional)';
+  static const String activeMedicine = 'Active';
+  static const String inactiveMedicine = 'Inactive';
   static const String saveMedicine = 'Save Medicine';
   static const String myMedicines = 'My Medicines';
   static const String noMedicines = 'No medicines added yet.';
+  static const String noMedicinesDescription = 'Add your medicines to set up reminders.';
   static const String takeMedicine = 'Take Medicine';
   static const String medicineTaken = 'Marked as Taken';
   static const String medicineSkipped = 'Skipped';
   static const String medicationHistory = 'Medication History';
+  static const String medicineAdded = 'Medicine added';
+  static const String medicineUpdated = 'Medicine updated';
+  static const String medicineDeleted = 'Medicine deleted';
+  static const String deleteMedicine = 'Delete Medicine';
+  static const String deleteMedicineConfirmTitle = 'Delete Medicine';
+  static const String deleteMedicineConfirmMessage = 'Are you sure you want to delete this medicine? Its reminders will be cancelled.';
+  static const String medicineReminderSafetyNote = 'Dosage and instructions are stored exactly as entered by you or your doctor. This app does not prescribe medication.';
+  static const String noReminderTimes = 'No reminder times set';
+  static const String remindersScheduled = 'Reminders scheduled';
+  static const String remindersCancelled = 'Reminders cancelled';
 
   // Emergency Contacts
   static const String addContact = 'Add Contact';
@@ -213,6 +238,24 @@ class AppStrings {
   static const String medicalConditions = 'Medical Conditions';
   static const String emergencyInstructions = 'Emergency Instructions';
   static const String saveChanges = 'Save Changes';
+
+  // Medical Profile (Phase 6A)
+  static const String medicalProfile = 'Medical Profile';
+  static const String editMedicalProfile = 'Edit Medical Profile';
+  static const String dateOfBirth = 'Date of Birth';
+  static const String bloodGroup = 'Blood Group';
+  static const String chronicConditions = 'Chronic Conditions';
+  static const String currentMedicines = 'Current Medicines';
+  static const String pastSurgeries = 'Past Surgeries';
+  static const String emergencyMedicalNotes = 'Emergency Medical Notes';
+  static const String emergencyMedicalNotesHint = 'Anything first responders should know (optional)';
+  static const String notSet = 'Not set';
+  static const String noneListed = 'None listed';
+  static const String medicalProfileSaved = 'Medical profile saved';
+  static const String medicalProfileSafetyNote = 'This information is stored privately on your account and is only visible to you.';
+  static const String addItem = 'Add';
+  static const String itemHint = 'Type an item and tap Add';
+  static const String noItems = 'No items added yet';
 
   // Offline Mode
   static const String offlineMode = 'Offline Mode';

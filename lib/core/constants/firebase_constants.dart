@@ -12,6 +12,11 @@ class FirebaseConstants {
   static const String fallEventsCollection = 'fall_events';
   static const String medicationLogsCollection = 'medication_logs';
 
+  // Medical Profile (Phase 6A)
+  // Stored at: users/{uid}/medical_profile/profile
+  static const String medicalProfileCollection = 'medical_profile';
+  static const String medicalProfileDoc = 'profile';
+
   // User Fields
   static const String userId = 'userId';
   static const String email = 'email';
@@ -43,6 +48,15 @@ class FirebaseConstants {
   static const String endDate = 'endDate';
   static const String isActive = 'isActive';
   static const String notes = 'notes';
+  static const String prescribedBy = 'prescribedBy';
+
+  // Medical Profile Fields
+  static const String dateOfBirth = 'dateOfBirth';
+  static const String bloodGroup = 'bloodGroup';
+  static const String chronicConditions = 'chronicConditions';
+  static const String currentMedicines = 'currentMedicines';
+  static const String pastSurgeries = 'pastSurgeries';
+  static const String emergencyMedicalNotes = 'emergencyMedicalNotes';
 
   // SOS Alert Fields
   static const String alertId = 'alertId';

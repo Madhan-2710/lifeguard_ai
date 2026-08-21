@@ -15,6 +15,8 @@ import '../emergency/sos_history_screen.dart';
 import '../fall_detection/fall_detection_screen.dart';
 import '../medicine/medicine_list_screen.dart';
 import '../medicine/add_medicine_screen.dart';
+import '../medicine/edit_medicine_screen.dart';
+import '../profile/edit_medical_profile_screen.dart';
 import '../contacts/contacts_screen.dart';
 import '../contacts/add_contact_screen.dart';
 import '../health_records/health_records_screen.dart';
@@ -38,11 +40,13 @@ class AppRoutes {
   static const String fallDetection = '/fall-detection';
   static const String medicines = '/medicines';
   static const String addMedicine = '/add-medicine';
+  static const String editMedicine = '/edit-medicine';
   static const String contacts = '/contacts';
   static const String addContact = '/add-contact';
   static const String healthRecords = '/health-records';
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
+  static const String editMedicalProfile = '/edit-medical-profile';
 
   // For tab-based navigation
   static const String dashboardTab = '/dashboard';
@@ -132,6 +136,11 @@ class AppRouter {
           builder: (context, state) => const AddMedicineScreen(),
         ),
         GoRoute(
+          path: AppRoutes.editMedicine,
+          name: 'editMedicine',
+          builder: (context, state) => const EditMedicineScreen(),
+        ),
+        GoRoute(
           path: AppRoutes.contacts,
           name: 'contacts',
           builder: (context, state) => const ContactsScreen(),
@@ -155,6 +164,11 @@ class AppRouter {
           path: AppRoutes.editProfile,
           name: 'editProfile',
           builder: (context, state) => const EditProfileScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.editMedicalProfile,
+          name: 'editMedicalProfile',
+          builder: (context, state) => const EditMedicalProfileScreen(),
         ),
       ],
       errorBuilder: (context, state) => Scaffold(

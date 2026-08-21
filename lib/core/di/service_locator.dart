@@ -21,6 +21,15 @@ import '../../features/health_assistant/data/datasources/local_health_assistant_
 import '../../features/health_assistant/data/repositories/health_assistant_repository_impl.dart';
 import '../../features/health_assistant/domain/repositories/health_assistant_repository.dart';
 import '../../features/health_assistant/presentation/cubit/health_assistant_cubit.dart';
+import '../../features/medical_profile/data/datasources/medical_profile_data_source.dart';
+import '../../features/medical_profile/data/repositories/medical_profile_repository_impl.dart';
+import '../../features/medical_profile/domain/repositories/medical_profile_repository.dart';
+import '../../features/medical_profile/presentation/cubit/medical_profile_cubit.dart';
+import '../../features/medicine/data/datasources/medicines_data_source.dart';
+import '../../features/medicine/data/repositories/medicines_repository_impl.dart';
+import '../../features/medicine/domain/repositories/medicines_repository.dart';
+import '../../features/medicine/presentation/cubit/medicines_cubit.dart';
+import '../services/medicine_reminder_service.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../features/sos/data/datasources/emergency_alert_delivery_data_source.dart';
 import '../../features/sos/data/datasources/emergency_event_data_source.dart';
@@ -150,5 +159,36 @@ Future<void> setupDependencies() async {
   // Factory: a fresh HealthAssistantCubit per screen visit (conversation state).
   sl.registerFactory<HealthAssistantCubit>(
     () => HealthAssistantCubit(repository: sl<HealthAssistantRepository>()),
+  );
+
+  // Medical Profile (Phase 6A)
+  sl.registerLazySingleton<MedicalProfileDataSource>(
+    () => MedicalProfileDataSourceImpl(),
+  );
+
+  sl.registerLazySingleton<MedicalProfileRepository>(
+    () => MedicalProfileRepositoryImpl(sl<MedicalProfileDataSource>()),
+  );
+
+  sl.registerLazySingleton<MedicalProfileCubit>(
+    () => MedicalProfileCubit(repository: sl<MedicalProfileRepository>()),
+  );
+
+  // Medicines (Phase 6A)
+  sl.registerLazySingleton<MedicinesDataSource>(
+    () => MedicinesDataSourceImpl(),
+  );
+
+  sl.registerLazySingleton<MedicinesRepository>(
+    () => MedicinesRepositoryImpl(sl<MedicinesDataSource>()),
+  );
+
+  sl.registerLazySingleton<MedicinesCubit>(
+    () => MedicinesCubit(repository: sl<MedicinesRepository>()),
+  );
+
+  // Medicine reminders (Phase 6A)
+  sl.registerLazySingleton<MedicineReminderService>(
+    () => MedicineReminderService(),
   );
 }
