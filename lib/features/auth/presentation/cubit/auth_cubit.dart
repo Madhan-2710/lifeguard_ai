@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -120,6 +122,15 @@ class AuthCubit extends Cubit<AuthState> {
       emit(const AuthState(
         status: AuthStatus.authenticated,
         onboardingCompleted: true,
+      ));
+    } on TimeoutException {
+      // Defensive: the data source converts timeouts to AuthException, but
+      // guarantee loading always ends even if a raw timeout escapes.
+      emit(const AuthState(
+        status: AuthStatus.failure,
+        message:
+            'Registration timed out. Please check your internet connection '
+            'and try again.',
       ));
     } on AppException catch (exception) {
       emit(AuthState(

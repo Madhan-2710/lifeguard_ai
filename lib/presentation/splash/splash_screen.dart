@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/constants/app_dimensions.dart';
@@ -75,8 +76,8 @@ class _SplashScreenState extends State<SplashScreen> {
               const Spacer(),
               // App Logo
               Container(
-                width: 100,
-                height: 100,
+                width: 120,
+                height: 120,
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(25),
@@ -88,10 +89,12 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.medical_services_outlined,
-                  size: 60,
-                  color: AppColors.primaryBlue,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(25),
+                  child: Image.asset(
+                    AppAssets.lifeguardLogo,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               const SizedBox(height: AppDimensions.paddingLG),

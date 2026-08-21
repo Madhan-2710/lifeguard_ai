@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/constants/firebase_constants.dart';
 import '../../../../core/errors/exceptions.dart';
@@ -104,11 +107,21 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
     required String phoneNumber,
     required String password,
   }) async {
+    // Diagnostic timeout for every awaited Firebase operation so the
+    // registration flow can never hang indefinitely. 15 seconds is generous
+    // for a healthy connection; a timeout here means the network call is
+    // stuck (no response), not merely slow.
+    const registrationTimeout = Duration(seconds: 15);
+
     try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email.trim(),
-        password: password,
-      );
+      debugPrint('REGISTRATION: creating auth user');
+      final credential = await _auth
+          .createUserWithEmailAndPassword(
+            email: email.trim(),
+            password: password,
+          )
+          .timeout(registrationTimeout);
+      debugPrint('REGISTRATION: auth user created');
 
       final user = credential.user;
       if (user == null) {
@@ -118,7 +131,11 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
         );
       }
 
-      await user.updateDisplayName(fullName.trim());
+      debugPrint('REGISTRATION: updating display name');
+      await user
+          .updateDisplayName(fullName.trim())
+          .timeout(registrationTimeout);
+      debugPrint('REGISTRATION: display name updated');
 
       final userModel = UserModel(
         id: user.uid,
@@ -131,12 +148,40 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
         updatedAt: DateTime.now(),
       );
 
-      await _firestore
-          .collection(FirebaseConstants.usersCollection)
-          .doc(user.uid)
-          .set(userModel.toMap());
+      try {
+        debugPrint('REGISTRATION: saving Firestore profile');
+        await _firestore
+            .collection(FirebaseConstants.usersCollection)
+            .doc(user.uid)
+            .set(userModel.toMap())
+            .timeout(registrationTimeout);
+        debugPrint('REGISTRATION: Firestore profile saved');
+      } catch (exception) {
+        // A timeout here must surface the timeout message, not the generic
+        // profile-save error, so rethrow it for the outer handler below.
+        if (exception is TimeoutException) {
+          rethrow;
+        }
+        // The Auth user was created, but saving the profile to Firestore
+        // failed (e.g. Firestore rules not deployed, network issue, or a
+        // permission error). Surface a clear message instead of a generic
+        // "email already in use" error.
+        throw AuthException(
+          message:
+              'Account created, but we could not save your profile. '
+              'Please try again.',
+          code: 'PROFILE_SAVE_ERROR',
+        );
+      }
 
       return userModel;
+    } on TimeoutException {
+      throw AuthException(
+        message:
+            'Registration timed out. Please check your internet connection '
+            'and try again.',
+        code: 'REGISTRATION_TIMEOUT',
+      );
     } on FirebaseAuthException catch (exception) {
       throw AuthException(
         message: _mapFirebaseAuthException(exception),
@@ -179,11 +224,19 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
       case 'too-many-requests':
         return 'Too many attempts. Please try again later.';
       case 'operation-not-allowed':
-        return 'Email/password sign-in is currently disabled.';
+        return 'Email/password sign-in is currently disabled. '
+            'Enable it in the Firebase Console under '
+            'Authentication > Sign-in method.';
       case 'requires-recent-login':
         return 'Please sign in again and try again.';
       default:
-        return exception.message ?? 'Authentication failed. Please try again.';
+        final message =
+            exception.message ?? 'Authentication failed. Please try again.';
+        // Include the raw Firebase error code so unexpected failures are
+        // not silently hidden from the user.
+        return exception.code.isNotEmpty
+            ? '$message (${exception.code})'
+            : message;
     }
   }
 }

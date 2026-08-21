@@ -1,5 +1,4 @@
 import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/validators.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -65,9 +64,10 @@ class AuthRepositoryImpl implements AuthRepository {
         code: 'AUTH_SERVICE_ERROR',
       );
     } catch (_) {
+      // Unknown error: do not misreport it as "invalid credentials".
       throw AuthException(
-        message: AuthFailure.invalidCredentials().message,
-        code: AuthFailure.invalidCredentials().code!,
+        message: 'Sign in failed. Please try again.',
+        code: 'LOGIN_ERROR',
       );
     }
   }
@@ -116,9 +116,10 @@ class AuthRepositoryImpl implements AuthRepository {
         code: 'AUTH_SERVICE_ERROR',
       );
     } catch (_) {
+      // Unknown error: do not misreport it as "email already in use".
       throw AuthException(
-        message: AuthFailure.emailAlreadyInUse().message,
-        code: AuthFailure.emailAlreadyInUse().code!,
+        message: 'Registration failed. Please try again.',
+        code: 'REGISTRATION_ERROR',
       );
     }
   }
@@ -156,9 +157,10 @@ class AuthRepositoryImpl implements AuthRepository {
         code: 'PASSWORD_RESET_ERROR',
       );
     } catch (_) {
+      // Unknown error: do not misreport it as "user not found".
       throw AuthException(
-        message: AuthFailure.userNotFound().message,
-        code: AuthFailure.userNotFound().code!,
+        message: 'Unable to send reset email. Please try again.',
+        code: 'PASSWORD_RESET_ERROR',
       );
     }
   }

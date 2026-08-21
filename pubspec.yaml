@@ -58,11 +58,19 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   fake_async: ^1.3.1
-
+  flutter_launcher_icons: ^0.14.4
 flutter:
   uses-material-design: true
-
   assets:
     - assets/images/
     - assets/lottie/
     - assets/models/
+
+# Android launcher icon generated from the LifeGuard AI logo.
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/images/lifeguard_ai_logo.jpg"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/lifeguard_ai_logo.jpg"
+  min_sdk_android: 21

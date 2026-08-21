@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
+import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/constants/app_dimensions.dart';
@@ -86,7 +87,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     icon: const Icon(Icons.arrow_back),
                     onPressed: () => context.go(AppRoutes.login),
                   ),
-                  const SizedBox(height: AppDimensions.paddingXL),
+                  const SizedBox(height: AppDimensions.paddingSM),
+                  // App Logo
+                  Center(
+                    child: Image.asset(
+                      AppAssets.lifeguardLogo,
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.paddingLG),
                   const Text(
                     AppStrings.createAccount,
                     style: TextStyle(
