@@ -15,6 +15,8 @@ import '../../features/contacts/data/repositories/contacts_repository_impl.dart'
 import '../../features/contacts/domain/repositories/contacts_repository.dart';
 import '../../features/contacts/presentation/cubit/contacts_cubit.dart';
 import '../../features/health_assistant/data/datasources/health_assistant_data_source.dart';
+import '../../features/health_assistant/data/datasources/llm_health_assistant_config.dart';
+import '../../features/health_assistant/data/datasources/llm_health_assistant_data_source.dart';
 import '../../features/health_assistant/data/datasources/local_health_assistant_data_source.dart';
 import '../../features/health_assistant/data/repositories/health_assistant_repository_impl.dart';
 import '../../features/health_assistant/domain/repositories/health_assistant_repository.dart';
@@ -128,9 +130,17 @@ Future<void> setupDependencies() async {
     () => SosHistoryCubit(eventRepository: sl<EmergencyEventRepository>()),
   );
 
-  // AI Health Assistant (Phase 5A) — local, offline-first response engine.
+  // AI Health Assistant (Phase 5B) — provider selection via config.
+  // Defaults to the local, offline-first engine. When the LLM provider is
+  // selected AND a credential is available, the LLM data source is used with
+  // automatic fallback to local mode on timeout, network failure, or
+  // malformed responses.
+  final llmConfig = LlmHealthAssistantConfig.fromEnvironment();
+  final HealthAssistantDataSource healthAssistantDataSource = llmConfig.useLlm
+      ? LlmHealthAssistantDataSource(config: llmConfig)
+      : const LocalHealthAssistantDataSource();
   sl.registerLazySingleton<HealthAssistantDataSource>(
-    () => const LocalHealthAssistantDataSource(),
+    () => healthAssistantDataSource,
   );
 
   sl.registerLazySingleton<HealthAssistantRepository>(

@@ -52,6 +52,8 @@ dependencies:
   # Miscellaneous
   intl: ^0.20.2
   connectivity_plus: ^6.1.4
+  # HTTP (LLM health assistant data source)
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:
