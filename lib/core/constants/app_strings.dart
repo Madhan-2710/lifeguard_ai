@@ -77,6 +77,10 @@ class AppStrings {
   static const String openEmergencySos = 'Open Emergency SOS';
   static const String healthAssistantClearConfirm = 'Clear the entire conversation?';
 
+  // AI Health Assistant — Phase 6B (medical profile context)
+  static const String usingSavedMedicalProfile = 'Using your saved medical profile';
+  static const String viewMedicalProfile = 'View Medical Profile';
+
   // Emergency SOS
   static const String sosTitle = 'SOS Emergency';
   static const String sosDescription = 'Press the button below to send an emergency alert to your trusted contacts with your live location.';

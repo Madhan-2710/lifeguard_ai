@@ -113,6 +113,7 @@ class _ChatViewState extends State<ChatView> {
           return Column(
             children: [
               const _SafetyDisclaimer(),
+              if (state.isUsingProfileContext) const _ProfileContextIndicator(),
               Expanded(
                 child: ListView.builder(
                   controller: _scrollController,
@@ -138,6 +139,47 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 }
+/// Subtle indicator that the assistant is using the user's saved medical
+/// profile as safe context. The profile itself is never displayed here.
+class _ProfileContextIndicator extends StatelessWidget {
+  const _ProfileContextIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: AppColors.surfaceBlue,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingMD,
+        vertical: AppDimensions.paddingXS,
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.health_and_safety_outlined,
+            size: AppDimensions.iconSM,
+            color: AppColors.primaryBlue,
+          ),
+          const SizedBox(width: AppDimensions.paddingSM),
+          Expanded(
+            child: Text(
+              AppStrings.usingSavedMedicalProfile,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSM,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => context.push(AppRoutes.editMedicalProfile),
+            child: const Text(AppStrings.viewMedicalProfile),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Thin banner reminding the user this is guidance, not medical care.
 class _SafetyDisclaimer extends StatelessWidget {
   const _SafetyDisclaimer();

@@ -20,6 +20,7 @@ import '../../features/health_assistant/data/datasources/llm_health_assistant_da
 import '../../features/health_assistant/data/datasources/local_health_assistant_data_source.dart';
 import '../../features/health_assistant/data/repositories/health_assistant_repository_impl.dart';
 import '../../features/health_assistant/domain/repositories/health_assistant_repository.dart';
+import '../../features/health_assistant/domain/services/health_context_builder.dart';
 import '../../features/health_assistant/presentation/cubit/health_assistant_cubit.dart';
 import '../../features/medical_profile/data/datasources/medical_profile_data_source.dart';
 import '../../features/medical_profile/data/repositories/medical_profile_repository_impl.dart';
@@ -156,9 +157,21 @@ Future<void> setupDependencies() async {
     () => HealthAssistantRepositoryImpl(sl<HealthAssistantDataSource>()),
   );
 
+  // Health context (Phase 6B) — safe medical profile context for the
+  // assistant, built from the medical profile and active medicines.
+  sl.registerLazySingleton<HealthContextBuilder>(
+    () => HealthContextBuilderImpl(
+      medicalProfileRepository: sl<MedicalProfileRepository>(),
+      medicinesRepository: sl<MedicinesRepository>(),
+    ),
+  );
+
   // Factory: a fresh HealthAssistantCubit per screen visit (conversation state).
   sl.registerFactory<HealthAssistantCubit>(
-    () => HealthAssistantCubit(repository: sl<HealthAssistantRepository>()),
+    () => HealthAssistantCubit(
+      repository: sl<HealthAssistantRepository>(),
+      contextBuilder: sl<HealthContextBuilder>(),
+    ),
   );
 
   // Medical Profile (Phase 6A)

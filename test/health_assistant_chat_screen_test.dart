@@ -8,6 +8,7 @@ import 'package:lifeguard_ai/core/services/location_service.dart';
 import 'package:lifeguard_ai/features/contacts/domain/entities/emergency_contact.dart';
 import 'package:lifeguard_ai/features/contacts/domain/repositories/contacts_repository.dart';
 import 'package:lifeguard_ai/features/health_assistant/domain/entities/health_assistant_response.dart';
+import 'package:lifeguard_ai/features/health_assistant/domain/entities/health_context.dart';
 import 'package:lifeguard_ai/features/health_assistant/domain/repositories/health_assistant_repository.dart';
 import 'package:lifeguard_ai/features/health_assistant/presentation/cubit/health_assistant_cubit.dart';
 import 'package:lifeguard_ai/features/sos/domain/entities/emergency_alert_delivery.dart';
@@ -176,7 +177,10 @@ class _FakeRepository implements HealthAssistantRepository {
   bool _firstCall = true;
 
   @override
-  Future<HealthAssistantResponse> getResponse(String userMessage) async {
+  Future<HealthAssistantResponse> getResponse(
+    String userMessage, {
+    HealthContext? context,
+  }) async {
     if (failFirst && _firstCall) {
       _firstCall = false;
       throw Exception('network error');
@@ -196,7 +200,10 @@ class _FakeRepository implements HealthAssistantRepository {
 
 class _SlowRepository implements HealthAssistantRepository {
   @override
-  Future<HealthAssistantResponse> getResponse(String userMessage) async {
+  Future<HealthAssistantResponse> getResponse(
+    String userMessage, {
+    HealthContext? context,
+  }) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     return HealthAssistantResponse(text: 'ok');
   }

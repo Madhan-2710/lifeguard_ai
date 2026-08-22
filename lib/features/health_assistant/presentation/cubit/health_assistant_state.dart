@@ -9,6 +9,7 @@ class HealthAssistantState extends Equatable {
     this.isResponding = false,
     this.errorMessage,
     this.failedMessageId,
+    this.isUsingProfileContext = false,
   });
 
   /// All messages in the conversation, in order.
@@ -23,6 +24,11 @@ class HealthAssistantState extends Equatable {
   /// Id of the user message that failed, so it can be retried.
   final String? failedMessageId;
 
+  /// True when the assistant is using the user's saved medical profile as
+  /// safe context. The UI only shows a subtle indicator — the profile itself
+  /// is never displayed in the chat.
+  final bool isUsingProfileContext;
+
   bool get hasError => errorMessage != null;
 
   /// True when the latest assistant guidance recommends emergency SOS.
@@ -34,6 +40,7 @@ class HealthAssistantState extends Equatable {
     bool? isResponding,
     String? errorMessage,
     String? failedMessageId,
+    bool? isUsingProfileContext,
     bool clearError = false,
   }) {
     return HealthAssistantState(
@@ -42,9 +49,17 @@ class HealthAssistantState extends Equatable {
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       failedMessageId:
           clearError ? null : (failedMessageId ?? this.failedMessageId),
+      isUsingProfileContext:
+          isUsingProfileContext ?? this.isUsingProfileContext,
     );
   }
 
   @override
-  List<Object?> get props => [messages, isResponding, errorMessage, failedMessageId];
+  List<Object?> get props => [
+    messages,
+    isResponding,
+    errorMessage,
+    failedMessageId,
+    isUsingProfileContext,
+  ];
 }

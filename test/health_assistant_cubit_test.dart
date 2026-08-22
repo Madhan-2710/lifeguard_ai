@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lifeguard_ai/features/health_assistant/domain/entities/chat_message.dart';
 import 'package:lifeguard_ai/features/health_assistant/domain/entities/health_assistant_response.dart';
+import 'package:lifeguard_ai/features/health_assistant/domain/entities/health_context.dart';
 import 'package:lifeguard_ai/features/health_assistant/domain/repositories/health_assistant_repository.dart';
 import 'package:lifeguard_ai/features/health_assistant/presentation/cubit/health_assistant_cubit.dart';
 
@@ -92,29 +93,36 @@ class _FakeRepository implements HealthAssistantRepository {
   final bool failFirst;
   bool _firstCall = true;
 
-  @override
-  Future<HealthAssistantResponse> getResponse(String userMessage) async {
-    if (failFirst && _firstCall) {
-      _firstCall = false;
-      throw Exception('network error');
+    @override
+    Future<HealthAssistantResponse> getResponse(
+      String userMessage, {
+      HealthContext? context,
+    }) async {
+      if (failFirst && _firstCall) {
+        _firstCall = false;
+        throw Exception('network error');
+      }
+      final text = userMessage.toLowerCase();
+      final serious =
+          text.contains('chest') ||
+          text.contains('bleed') ||
+          text.contains('breath') ||
+          text.contains('unconscious') ||
+          text.contains('fall');
+      return HealthAssistantResponse(
+        text: 'Guidance for: $userMessage',
+        sosRecommended: serious,
+      );
     }
-    final text = userMessage.toLowerCase();
-    final serious = text.contains('chest') ||
-        text.contains('bleed') ||
-        text.contains('breath') ||
-        text.contains('unconscious') ||
-        text.contains('fall');
-    return HealthAssistantResponse(
-      text: 'Guidance for: $userMessage',
-      sosRecommended: serious,
-    );
   }
-}
 
-class _SlowRepository implements HealthAssistantRepository {
-  @override
-  Future<HealthAssistantResponse> getResponse(String userMessage) async {
-    await Future<void>.delayed(const Duration(milliseconds: 50));
-    return HealthAssistantResponse(text: 'ok');
+  class _SlowRepository implements HealthAssistantRepository {
+    @override
+    Future<HealthAssistantResponse> getResponse(
+      String userMessage, {
+      HealthContext? context,
+    }) async {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      return HealthAssistantResponse(text: 'ok');
+    }
   }
-}

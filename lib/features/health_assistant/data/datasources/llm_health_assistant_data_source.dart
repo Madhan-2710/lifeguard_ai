@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../domain/entities/health_assistant_response.dart';
+import '../../domain/entities/health_context.dart';
 import 'emergency_safety_override.dart';
 import 'health_assistant_data_source.dart';
 import 'llm_health_assistant_config.dart';
@@ -63,7 +64,10 @@ class LlmHealthAssistantDataSource implements HealthAssistantDataSource {
       '{"text": "your guidance", "sos_recommended": true|false}.';
 
   @override
-  Future<HealthAssistantResponse> getResponse(String userMessage) async {
+  Future<HealthAssistantResponse> getResponse(
+    String userMessage, {
+    HealthContext? context,
+  }) async {
     final category = _safetyOverride.matchCategory(userMessage);
     try {
       final raw = await _client
@@ -73,13 +77,13 @@ class LlmHealthAssistantDataSource implements HealthAssistantDataSource {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer ${config.apiKey}',
             },
-            body: jsonEncode(_buildRequestBody(userMessage)),
+            body: jsonEncode(_buildRequestBody(userMessage, context)),
           )
           .timeout(config.timeout);
 
       final parsed = _parseLlmResponse(raw);
       if (parsed == null) {
-        return _fallbackResponse(userMessage, category);
+        return _fallbackResponse(userMessage, category, context);
       }
       return HealthAssistantResponse(
         text: parsed.text,
@@ -89,19 +93,39 @@ class LlmHealthAssistantDataSource implements HealthAssistantDataSource {
       );
     } catch (_) {
       // Timeout, no network, auth failure, or any other exception → local.
-      return _fallbackResponse(userMessage, category);
+      return _fallbackResponse(userMessage, category, context);
     }
   }
 
-  Map<String, Object> _buildRequestBody(String userMessage) => {
-        'model': config.model,
-        'messages': [
-          {'role': 'system', 'content': _systemPrompt},
-          {'role': 'user', 'content': userMessage},
-        ],
-        'temperature': 0.3,
-        'max_tokens': 500,
-      };
+  /// Builds the chat-completions request body. The medical context is passed
+  /// SEPARATELY from the user's message as its own system message, so the
+  /// model can use it as safe context without confusing it with the user's
+  /// current question.
+  Map<String, Object> _buildRequestBody(
+    String userMessage,
+    HealthContext? context,
+  ) {
+    final messages = <Map<String, Object>>[
+      {'role': 'system', 'content': _systemPrompt},
+    ];
+    if (context != null && !context.isEmpty) {
+      messages.add({
+        'role': 'system',
+        'content': 'MEDICAL CONTEXT (user-provided/stored information):\n'
+            '${context.toPromptSection()}\n\n'
+            'This context is user-provided or stored profile data. Do not '
+            'invent missing medical history, do not assume the profile is '
+            'complete, and never override emergency safety rules.',
+      });
+    }
+    messages.add({'role': 'user', 'content': userMessage});
+    return {
+      'model': config.model,
+      'messages': messages,
+      'temperature': 0.3,
+      'max_tokens': 500,
+    };
+  }
 
   /// Parses an OpenAI-compatible response. Returns null when malformed.
   ({String text, bool sosRecommended})? _parseLlmResponse(http.Response raw) {
@@ -159,10 +183,11 @@ class LlmHealthAssistantDataSource implements HealthAssistantDataSource {
 
   /// Local-mode fallback. For the seven critical categories the response is
   /// fully deterministic and always recommends SOS; everything else is
-  /// delegated to the offline engine.
+  /// delegated to the offline engine (with the same safe context).
   Future<HealthAssistantResponse> _fallbackResponse(
     String userMessage,
     EmergencyCategory? category,
+    HealthContext? context,
   ) async {
     if (category != null) {
       return HealthAssistantResponse(
@@ -170,6 +195,6 @@ class LlmHealthAssistantDataSource implements HealthAssistantDataSource {
         sosRecommended: true,
       );
     }
-    return _localFallback.getResponse(userMessage);
+    return _localFallback.getResponse(userMessage, context: context);
   }
 }
